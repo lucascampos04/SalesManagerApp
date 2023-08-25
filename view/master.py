@@ -1,4 +1,14 @@
-from tkinter import Button, Frame, Tk, messagebox, filedialog, Label, ttk
+from tkinter import (
+    Button,
+    Frame,
+    Tk,
+    messagebox,
+    filedialog,
+    Label,
+    ttk,
+    simpledialog,
+)
+from datetime import datetime
 
 # colors
 whitesmoke = "#dcdee8"
@@ -6,6 +16,17 @@ whiteBg = "#e6e7eb"
 blackLight = "#3d3f47"
 blackButLight = "#585959"
 blue = "#213ac4"
+
+# logic
+
+
+def newFile():
+    global numberSerialStatus, budgetStatus, valueStatus, valuediscountStatus
+    numberSerialStatus = simpledialog.askfloat("Numero de serie", "Valor: ")
+    budgetStatus = simpledialog.askstring("Orçamento", "Orçamento")
+    valueStatus = simpledialog.askstring("Valor", "Valor")
+    valuediscountStatus = simpledialog.askstring("Valor desconto", "Desconto")
+
 
 window = Tk()
 window.resizable(False, False)
@@ -48,6 +69,7 @@ btn_new = Button(
     width=5,
     highlightbackground=blackLight,
     highlightthickness=2,
+    command=newFile,
 )
 btn_new.place(
     x=15,
@@ -205,7 +227,7 @@ valueFreight.place(
 
 valueFreightGenereted = Label(
     frame_middle,
-    text="XXXXXX",
+    text="Frete gerado",
     font=("Arial 10 bold"),
     bg=whitesmoke,
 )
@@ -227,7 +249,7 @@ discount.place(
 
 discountGenereted = Label(
     frame_middle,
-    text="XXXXXX",
+    text="Desconto gerado",
     font=("Arial 10 bold"),
     bg=whitesmoke,
 )
@@ -236,5 +258,124 @@ discountGenereted.place(
     y=180,
 )
 
+# labels / widget / buttons the right
+
+dateCreate = Label(
+    frame_middle,
+    text="Data de criação",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+dateCreate.place(
+    x=500,
+    y=20,
+)
+
+dataCreateGenered = Label(
+    frame_middle,
+    text="XXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+dataCreateGenered.place(
+    x=650,
+    y=20,
+)
+
+saller = Label(
+    frame_middle,
+    text="Vendedor",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+saller.place(
+    x=500,
+    y=60,
+)
+
+salesGenered = ttk.Combobox(
+    frame_middle,
+    values=[
+        "Lucas",
+        "João",
+        "Lucas",
+        "João",
+        "Lucas",
+        "João",
+    ],
+)
+salesGenered.place(
+    x=620,
+    y=60,
+)
+
+saller = Label(
+    frame_middle,
+    text="Forma de pagamento",
+    font=("Arial 8 bold"),
+    bg=whitesmoke,
+)
+saller.place(
+    x=500,
+    y=100,
+)
+
+formPayment = ttk.Combobox(
+    frame_middle,
+    values=[
+        "Cartão de debito",
+        "Cartão de credito",
+        "Boleto",
+        "Pix",
+    ],
+)
+formPayment.place(
+    x=620,
+    y=100,
+)
+
+subTotal = Label(
+    frame_middle,
+    text="Subtotal",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+subTotal.place(
+    x=500,
+    y=140,
+)
+
+subTotalGenereted = Label(
+    frame_middle,
+    text="XXXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+subTotalGenereted.place(
+    x=620,
+    y=140,
+)
+
+total = Label(
+    frame_middle,
+    text="Total",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+total.place(
+    x=500,
+    y=180,
+)
+
+totalGenereted = Label(
+    frame_middle,
+    text="XXXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+totalGenereted.place(
+    x=620,
+    y=180,
+)
 
 window.mainloop()
