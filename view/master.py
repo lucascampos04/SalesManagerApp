@@ -17,15 +17,106 @@ blackLight = "#3d3f47"
 blackButLight = "#585959"
 blue = "#213ac4"
 
-# logic
 
+# Logic
+class SalesData:
+    """Class to store sales data"""
+    def __init__(self, id, valueFrete, date_creator, saller, form_pag, subTotal, total, amount):
+        """Initialize an instance of the SalesData class"""
+        self.id = id
+        self.valueFrete = valueFrete
+        self.date_creator = date_creator
+        self.saller = saller
+        self.form_pag = form_pag
+        self.subTotal = subTotal
+        self.total = total
+        self.amount = amount
 
-def newFile():
-    global numberSerialStatus, budgetStatus, valueStatus, valuediscountStatus
-    numberSerialStatus = simpledialog.askfloat("Numero de serie", "Valor: ")
-    budgetStatus = simpledialog.askstring("Orçamento", "Orçamento")
-    valueStatus = simpledialog.askstring("Valor", "Valor")
-    valuediscountStatus = simpledialog.askstring("Valor desconto", "Desconto")
+def get_inputs_users():
+    """Get user input using dialog boxes"""
+    id = simpledialog.askstring("Numero de serie do produto", "Numero do Produto: ")
+    if (id is None):
+        return None
+
+    valueFrete = simpledialog.askfloat("Valor Frete", "Frete: ")
+    if (valueFrete is None):
+        return None
+
+    date_creator = simpledialog.askstring("Data de entrega", "Data de entrega: ")
+    if (date_creator is None):
+        return None
+
+    saller = simpledialog.askstring("Vendedor", "Vendedor")
+    if (saller is None):
+        return None
+
+    form_pag = simpledialog.askstring("Forma de pagamento", "Forma de pagamento")
+    if (form_pag is None):
+        return None
+
+    subTotal = simpledialog.askfloat("SubTotal", "SubTotal: ")
+    if (subTotal is None):
+        return None
+
+    total = simpledialog.askfloat("Total", "Total: ")
+    if (total is None):
+        return None
+
+    amount = simpledialog.askfloat("Quantidade", "Quantidade")
+    if (amount is None):
+        return None
+
+    sales_data = SalesData(id, valueFrete, date_creator, saller, form_pag, subTotal, total, amount)
+    return sales_data
+
+def handleNew():
+    """Handle creation of new sales and calculate discounts"""
+    sales_data = get_inputs_users()
+
+    if (sales_data is None):
+        statusGenereted.config(text="Erro: Informações incorretas ou vazias.")
+        return
+
+    numberGenerated.config(text=sales_data.id)
+    valueFreightGenereted.config(text=f"{sales_data.valueFrete}R$")
+    amountGenereted.config(text=sales_data.amount)
+    subTotalGenereted.config(text=sales_data.subTotal)
+    totalGenereted.config(text=sales_data.total)
+
+    # Value conversion
+    freight_value = float(sales_data.valueFrete)
+    subTotal_value = float(sales_data.subTotal)
+    amount_value = float(sales_data.amount)
+
+    discount_value = 0.0  # Defining a default value
+    isDiscount_applied = False
+
+    if (sales_data.total < 100):
+        messagebox.showinfo("Desconto no frete", "Parabens voce ganhou 10% de desconto no frete.")
+        newValueFreight = 30 - (30 * 0.30)
+        valueFreightGenereted.config(text=f"{newValueFreight:.2f}R$")
+        isDiscount_applied = True
+
+    if (amount_value >= 4):
+        messagebox.showinfo("Desconto","Parabens voce ganhou 10% de desconto. Na compra de mais 5 itens o desconto dobra.")
+        newTotal = sales_data.total - (sales_data.total * 0.10)
+        discount_value = 0.10
+        totalGenereted.config(text=f"{newTotal:.2f}")
+        subTotalGenereted.config(text=f"{newTotal:.2f}")
+        discountGenereted.config(text=f"{discount_value * 100:.0f}%")
+        isDiscount_applied = True
+
+        if (isDiscount_applied):
+            statusGenereted.config(text=f"Produto autorizado descontos")
+            return
+        else:
+            statusGenereted.config(text=f"Produto autorizado com sucesso")
+
+    return sales_data
+
+    formatted_date = datetime.strptime(sales_data.date_creator, "%Y-%m-%d").strftime("%d/%m/%Y")
+    dataCreateGenered.config(text=formatted_date)
+
 
 
 window = Tk()
@@ -69,7 +160,7 @@ btn_new = Button(
     width=5,
     highlightbackground=blackLight,
     highlightthickness=2,
-    command=newFile,
+    command=handleNew,
 )
 btn_new.place(
     x=15,
@@ -258,6 +349,27 @@ discountGenereted.place(
     y=180,
 )
 
+amount = Label(
+    frame_middle,
+    text="Quantidade de itens: ",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+amount.place(
+    x=20,
+    y=220,
+)
+
+amountGenereted = Label(
+    frame_middle,
+    text="XXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+amountGenereted.place(
+    x=150,
+    y=220,
+)
 # labels / widget / buttons the right
 
 dateCreate = Label(
