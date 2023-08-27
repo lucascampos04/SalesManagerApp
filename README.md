@@ -1,8 +1,9 @@
 ## SalesManagerApp
 
 Este é um projeto de sistema de vendas desenvolvido em Python usando a biblioteca Tkinter para a interface gráfica. O sistema permite que os usuários registrem vendas, apliquem descontos e salvem as informações no banco de dados.
-<hr>
+
 # Como Executar
+
 1 - Certifique-se de ter o Python instalado no seu sistema.
 2 - Instale as bibliotecas `tkinter` e `mysql-connector-python` usando os seguintes comandos: `pip install tkinter` | `pip install mysql-connector-python`  
 3 - Clone este repositório ou faça o download do código-fonte.
