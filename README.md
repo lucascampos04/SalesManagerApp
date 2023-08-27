@@ -11,6 +11,7 @@ Este é um projeto de sistema de vendas desenvolvido em Python usando a bibliote
    ```sh
    pip install tkinter
    ```
+   
    ```sh
    pip install mysql-connector-python
    ```
