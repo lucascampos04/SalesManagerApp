@@ -1,8 +1,14 @@
 import os.path
+from email.mime.application import MIMEApplication
 from tkinter import Button, Frame, Tk, messagebox, Label, simpledialog, filedialog
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from decouple import config
 import database
 from database import connect_database, close_database
 import mysql.connector
@@ -214,6 +220,37 @@ def generate_and_save_pdf(sales_data):
         shutil.move(pdf_filename, save_path)
         messagebox.showinfo("Sucesso", f"Arquivo {save_path} salvo com sucesso!")
 
+def send_email(email_address, sales_data, pdf_filename):
+    smtp_server = config('SMTP_SERVER')
+    smtp_port = config('SMTP_PORT')
+    smtp_username = config('SMTP_USERNAME')
+    smtp_password = config('SMTP_PASSWORD')
+
+    subject = "Compra realizada com sucesso"
+    body = f"Olá, {sales_data.client}!\n\nSua compra foi realizada com sucesso."
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_username
+    msg['To'] = email_address
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    with open(pdf_filename, "rb") as attachment:
+        part = MIMEApplication(attachment.read(), Name=pdf_filename)
+        part['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+        msg.attach(part)
+
+    text = msg.as_string()
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.sendmail(smtp_username, email_address, text)
+        print("Email enviado com sucesso!")
+    except Exception as e:
+        print("Erro ao enviar o email:", e)
+
 def handleNew():
     """Handle creation of new sales and calculate discounts"""
     sales_data = get_inputs_users()
@@ -223,6 +260,7 @@ def handleNew():
         return
 
     generate_invoice_pdf(sales_data)
+    send_email(sales_data.email, sales_data, pdf_filename)
 
     numberGenerated.config(text=sales_data.id)
     nameProductGenereted.config(text=sales_data.name_product)
