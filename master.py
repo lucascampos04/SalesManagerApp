@@ -1,9 +1,12 @@
-from tkinter import Button, Frame, Tk, messagebox, Label, simpledialog
+import os.path
+from tkinter import Button, Frame, Tk, messagebox, Label, simpledialog, filedialog
 from datetime import datetime
-
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 import database
 from database import connect_database, close_database
 import mysql.connector
+
 
 # colors
 whitesmoke = "#dcdee8"
@@ -176,6 +179,40 @@ def insert_sales(sales_data, product_id, customer_id):
             statusGenereted.config(text=f"Erro no banco de dados: {err}")
             bank.rollback()
 
+def generate_invoice_pdf(sales_data):
+
+    pdf_filename = f'arquivo_{sales_data.id}.pdf'
+
+    c = canvas.Canvas(pdf_filename, pagesize=letter)
+    c.drawString(100, 750, "NOTA FISCAL\n\n")
+    c.drawString(100, 730, f'Venda ID: {sales_data.id}')
+    c.drawString(100, 710, f'Produto: {sales_data.name_product}')
+    c.drawString(100, 690, f'Frete: {sales_data.valueFrete}')
+    c.drawString(100, 670, f'Quantidade de produtos: {sales_data.amount}')
+    c.drawString(100, 650, f'SubTotal: R$ {sales_data.subTotal:.2f}')
+    c.drawString(100, 630, f'Total: R$ {sales_data.total:.2f}')
+    c.drawString(100, 610, f'Vendedor: {sales_data.saller}')
+    c.drawString(100, 590, f'Forma De pagamento: {sales_data.form_pag}')
+    c.drawString(100, 570, f'Nome Cliente: {sales_data.client}')
+
+    c.save()
+
+    return pdf_filename
+
+def generate_and_save_pdf(sales_data):
+    """Generate and save the PDF invoice"""
+    pdf_filename = generate_invoice_pdf(sales_data)
+
+    save_path = filedialog.asksaveasfilename(
+        defaultextension=".pdf",
+        filetypes=[("PDF files", "*.pdf")],
+        title="Salvar Nota Fiscal"
+    )
+
+    if (save_path):
+        import shutil
+        shutil.move(pdf_filename, save_path)
+        messagebox.showinfo("Sucesso", f"Arquivo {save_path} salvo com sucesso!")
 
 def handleNew():
     """Handle creation of new sales and calculate discounts"""
@@ -184,6 +221,8 @@ def handleNew():
     if sales_data is None:
         statusGenereted.config(text="Erro: Informações incorretas ou vazias.")
         return
+
+    generate_invoice_pdf(sales_data)
 
     numberGenerated.config(text=sales_data.id)
     nameProductGenereted.config(text=sales_data.name_product)
@@ -246,11 +285,14 @@ def handleNew():
 
     return sales_data
 
-
-# date now
 date_now = datetime.now()
 date_formated = date_now.strftime("%Y-%m-%d")
 
+def saveFIle(sales_):
+    pass
+
+def quitFile():
+    pass
 
 window = Tk()
 window.resizable(False, False)
@@ -306,7 +348,7 @@ btn_save = Button(
     font=("Arial 11 bold"),
     width=7,
     highlightbackground=blackLight,
-    highlightthickness=2,
+    highlightthickness=2
 )
 btn_save.place(
     x=79,
@@ -321,6 +363,7 @@ btn_send = Button(
     width=7,
     highlightbackground=blackLight,
     highlightthickness=2,
+    command=handleNew
 )
 btn_send.place(
     x=310,
@@ -333,6 +376,7 @@ btn_quit = Button(
     font=("Arial 11 bold"),
     highlightbackground=blackLight,
     highlightthickness=2,
+    command=quitFile
 )
 btn_quit.place(
     x=390,
