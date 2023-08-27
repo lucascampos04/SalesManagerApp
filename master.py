@@ -1,14 +1,9 @@
-from tkinter import (
-    Button,
-    Frame,
-    Tk,
-    messagebox,
-    filedialog,
-    Label,
-    ttk,
-    simpledialog
-)
+from tkinter import Button, Frame, Tk, messagebox, Label, simpledialog
 from datetime import datetime
+
+import database
+from database import connect_database, close_database
+import mysql.connector
 
 # colors
 whitesmoke = "#dcdee8"
@@ -21,9 +16,23 @@ blue = "#213ac4"
 # Logic
 class SalesData:
     """Class to store sales data"""
-    def __init__(self, id, cliet, valueFrete, amount, saller, form_pag, subTotal, total):
+
+    def __init__(
+        self,
+        id,
+        name_product,
+        cliet,
+        valueFrete,
+        amount,
+        saller,
+        form_pag,
+        subTotal,
+        total,
+        email,
+    ):
         """Initialize an instance of the SalesData class"""
         self.id = id
+        self.name_product = name_product
         self.client = cliet
         self.valueFrete = valueFrete
         self.amount = amount
@@ -31,53 +40,153 @@ class SalesData:
         self.form_pag = form_pag
         self.subTotal = subTotal
         self.total = total
+        self.email = email
+
 
 def get_inputs_users():
     """Get user input using dialog boxes"""
     id = simpledialog.askstring("Numero de serie do produto", "Numero do Produto: ")
-    if (id is None):
+    if id is None:
+        return None
+
+    nameProduct = simpledialog.askstring("Nome do produto", "Nome Produto")
+    if nameProduct is None:
         return None
 
     client = simpledialog.askstring("Nome cliente", "Nome do cliente")
-    if (client is None):
+    if client is None:
         return None
 
     valueFrete = simpledialog.askfloat("Valor Frete", "Frete: ")
-    if (valueFrete is None):
+    if valueFrete is None:
         return None
 
     amount = simpledialog.askfloat("Quantidade", "Quantidade")
-    if (amount is None):
+    if amount is None:
         return None
 
     saller = simpledialog.askstring("Vendedor", "Vendedor")
-    if (saller is None):
+    if saller is None:
         return None
 
     form_pag = simpledialog.askstring("Forma de pagamento", "Forma de pagamento")
-    if (form_pag is None):
+    if form_pag is None:
         return None
 
     subTotal = simpledialog.askfloat("SubTotal", "SubTotal: ")
-    if (subTotal is None):
+    if subTotal is None:
         return None
 
     total = simpledialog.askfloat("Total", "Total: ")
-    if (total is None):
+    if total is None:
         return None
 
-    sales_data = SalesData(id, client, valueFrete, saller, form_pag, subTotal, total, amount)
+    email = simpledialog.askstring("Email", "Email")
+    if email is None:
+        return None
+
+    sales_data = SalesData(
+        id,
+        nameProduct,
+        client,
+        valueFrete,
+        amount,
+        saller,
+        form_pag,
+        subTotal,
+        total,
+        email,
+    )
     return sales_data
+
+
+def insert_customers(name, email):
+    bank = database.connect_database()
+    if bank is not None:
+        try:
+            cursor = bank.cursor()
+
+            insert_query = "INSERT INTO customers (name, email) VALUES (%s, %s)"
+            data_tuple = (name, email)
+            cursor.execute(insert_query, data_tuple)
+            customer_id = cursor.lastrowid
+            bank.commit()
+            cursor.close()
+            database.close_database(bank)
+
+            return customer_id
+
+        except mysql.connector.Error as err:
+            print("Erro durante a inserção na tabela de clientes:", err)
+            bank.rollback()
+
+    return None
+
+
+def insert_product(name, price):
+    bank = database.connect_database()
+    if bank is not None:
+        try:
+            cursor = bank.cursor()
+
+            insert_query = "INSERT INTO products (name, price) VALUES (%s, %s)"
+            data_tuple = (name, price)
+            cursor.execute(insert_query, data_tuple)
+            product_id = cursor.lastrowid
+            bank.commit()
+            cursor.close()
+            database.close_database(bank)
+
+            return product_id
+
+        except mysql.connector.Error as err:
+            print("Erro durante a inserção na tabela de produtos:", err)
+            bank.rollback()
+
+    return None
+
+
+def insert_sales(sales_data, product_id, customer_id):
+    bank = database.connect_database()
+    if bank is not None:
+        try:
+            cursor = bank.cursor()
+
+            # Prepare the INSERT INTO statement
+            insert_query = "INSERT INTO sales (amount, valueFreight, date_created, subtotal, total, form_payment, product_id, customer_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            data_tuple = (
+                sales_data.amount,
+                sales_data.valueFrete,
+                date_now,
+                sales_data.subTotal,
+                sales_data.total,
+                sales_data.form_pag,
+                product_id,
+                customer_id,
+            )
+            cursor.execute(insert_query, data_tuple)
+            bank.commit()
+            cursor.close()
+            database.close_database(bank)
+
+            statusGenereted.config(text="Produto autorizado com sucesso")
+
+        except mysql.connector.Error as err:
+            print("Erro durante a inserção no banco de dados:", err)
+            statusGenereted.config(text=f"Erro no banco de dados: {err}")
+            bank.rollback()
+
 
 def handleNew():
     """Handle creation of new sales and calculate discounts"""
     sales_data = get_inputs_users()
 
-    if (sales_data is None):
+    if sales_data is None:
         statusGenereted.config(text="Erro: Informações incorretas ou vazias.")
         return
 
     numberGenerated.config(text=sales_data.id)
+    nameProductGenereted.config(text=sales_data.name_product)
     valueFreightGenereted.config(text=f"{sales_data.valueFrete}R$")
     amountGenereted.config(text=sales_data.amount)
     subTotalGenereted.config(text=sales_data.subTotal)
@@ -94,14 +203,19 @@ def handleNew():
     discount_value = 0.0  # Defining a default value
     isDiscount_applied = False
 
-    if (sales_data.total < 100):
-        messagebox.showinfo("Desconto no frete", "Parabens voce ganhou 10% de desconto no frete.")
+    if sales_data.total < 100:
+        messagebox.showinfo(
+            "Desconto no frete", "Parabens voce ganhou 10% de desconto no frete."
+        )
         newValueFreight = 30 - (30 * 0.30)
         valueFreightGenereted.config(text=f"{newValueFreight:.2f}R$")
         isDiscount_applied = True
 
-    if (amount_value >= 4):
-        messagebox.showinfo("Desconto","Parabens voce ganhou 10% de desconto. Na compra de mais 5 itens o desconto dobra.")
+    if amount_value >= 4:
+        messagebox.showinfo(
+            "Desconto",
+            "Parabens voce ganhou 10% de desconto. Na compra de mais 5 itens o desconto dobra.",
+        )
         newTotal = sales_data.total - (sales_data.total * 0.10)
         discount_value = 0.10
         totalGenereted.config(text=f"{newTotal:.2f}")
@@ -109,13 +223,29 @@ def handleNew():
         discountGenereted.config(text=f"{discount_value * 100:.0f}%")
         isDiscount_applied = True
 
-        if (isDiscount_applied):
+        if isDiscount_applied:
             statusGenereted.config(text=f"Produto autorizado descontos")
             return
         else:
             statusGenereted.config(text=f"Produto autorizado com sucesso")
 
+    if sales_data is None:
+        statusGenereted.config(text="Erro: Informações incorretas ou vazias.")
+        return
+
+    product_id = insert_product(sales_data.name_product, sales_data.total)
+    customer_id = insert_customers(sales_data.client, sales_data.email)
+
+    if product_id is None:
+        messagebox.showinfo("Erro", "Erro ao inserir o produto")
+
+    if customer_id is None:
+        messagebox.showinfo("Erro", "Erro ao inserir o cliente")
+
+    insert_sales(sales_data, product_id, customer_id)
+
     return sales_data
+
 
 # date now
 date_now = datetime.now()
@@ -238,10 +368,8 @@ btn_search.place(
 # labels / widget / buttons the left
 
 nameProduct = Label(
-    frame_middle,
-    text="Nome do Produto: ",
-    font=("Arial 10 bold"),
-    bg=whitesmoke)
+    frame_middle, text="Nome do Produto: ", font=("Arial 10 bold"), bg=whitesmoke
+)
 
 nameProduct.place(
     x=20,
@@ -260,11 +388,7 @@ nameProductGenereted.place(
 )
 
 
-number = Label(
-    frame_middle,
-    text="Número: ",
-    font=("Arial 10 bold"),
-    bg=whitesmoke)
+number = Label(frame_middle, text="Número: ", font=("Arial 10 bold"), bg=whitesmoke)
 
 number.place(
     x=20,
@@ -406,7 +530,7 @@ dateCreate.place(
 
 dataCreateGenered = Label(
     frame_middle,
-    text=f'{date_formated}',
+    text=f"{date_formated}",
     font=("Arial 10 bold"),
     bg=whitesmoke,
 )
