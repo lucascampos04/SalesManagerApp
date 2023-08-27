@@ -6,7 +6,7 @@ from tkinter import (
     filedialog,
     Label,
     ttk,
-    simpledialog,
+    simpledialog
 )
 from datetime import datetime
 
@@ -21,16 +21,16 @@ blue = "#213ac4"
 # Logic
 class SalesData:
     """Class to store sales data"""
-    def __init__(self, id, valueFrete, date_creator, saller, form_pag, subTotal, total, amount):
+    def __init__(self, id, cliet, valueFrete, amount, saller, form_pag, subTotal, total):
         """Initialize an instance of the SalesData class"""
         self.id = id
+        self.client = cliet
         self.valueFrete = valueFrete
-        self.date_creator = date_creator
+        self.amount = amount
         self.saller = saller
         self.form_pag = form_pag
         self.subTotal = subTotal
         self.total = total
-        self.amount = amount
 
 def get_inputs_users():
     """Get user input using dialog boxes"""
@@ -38,12 +38,16 @@ def get_inputs_users():
     if (id is None):
         return None
 
+    client = simpledialog.askstring("Nome cliente", "Nome do cliente")
+    if (client is None):
+        return None
+
     valueFrete = simpledialog.askfloat("Valor Frete", "Frete: ")
     if (valueFrete is None):
         return None
 
-    date_creator = simpledialog.askstring("Data de entrega", "Data de entrega: ")
-    if (date_creator is None):
+    amount = simpledialog.askfloat("Quantidade", "Quantidade")
+    if (amount is None):
         return None
 
     saller = simpledialog.askstring("Vendedor", "Vendedor")
@@ -62,11 +66,7 @@ def get_inputs_users():
     if (total is None):
         return None
 
-    amount = simpledialog.askfloat("Quantidade", "Quantidade")
-    if (amount is None):
-        return None
-
-    sales_data = SalesData(id, valueFrete, date_creator, saller, form_pag, subTotal, total, amount)
+    sales_data = SalesData(id, client, valueFrete, saller, form_pag, subTotal, total, amount)
     return sales_data
 
 def handleNew():
@@ -82,6 +82,9 @@ def handleNew():
     amountGenereted.config(text=sales_data.amount)
     subTotalGenereted.config(text=sales_data.subTotal)
     totalGenereted.config(text=sales_data.total)
+    salesGenered.config(text=sales_data.saller)
+    formPaymentGenereted.config(text=sales_data.form_pag)
+    clientGenereted.config(text=sales_data.client)
 
     # Value conversion
     freight_value = float(sales_data.valueFrete)
@@ -114,9 +117,9 @@ def handleNew():
 
     return sales_data
 
-    formatted_date = datetime.strptime(sales_data.date_creator, "%Y-%m-%d").strftime("%d/%m/%Y")
-    dataCreateGenered.config(text=formatted_date)
-
+# date now
+date_now = datetime.now()
+date_formated = date_now.strftime("%Y-%m-%d")
 
 
 window = Tk()
@@ -234,11 +237,38 @@ btn_search.place(
 
 # labels / widget / buttons the left
 
-number = Label(frame_middle, text="Número: ", font=("Arial 10 bold"), bg=whitesmoke)
+nameProduct = Label(
+    frame_middle,
+    text="Nome do Produto: ",
+    font=("Arial 10 bold"),
+    bg=whitesmoke)
+
+nameProduct.place(
+    x=20,
+    y=20,
+)
+
+nameProductGenereted = Label(
+    frame_middle,
+    text="XXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
+)
+nameProductGenereted.place(
+    x=150,
+    y=20,
+)
+
+
+number = Label(
+    frame_middle,
+    text="Número: ",
+    font=("Arial 10 bold"),
+    bg=whitesmoke)
 
 number.place(
     x=20,
-    y=20,
+    y=60,
 )
 
 numberGenerated = Label(
@@ -249,7 +279,7 @@ numberGenerated = Label(
 )
 numberGenerated.place(
     x=150,
-    y=20,
+    y=60,
 )
 
 status = Label(
@@ -260,7 +290,7 @@ status = Label(
 )
 status.place(
     x=20,
-    y=60,
+    y=100,
 )
 
 statusGenereted = Label(
@@ -271,7 +301,7 @@ statusGenereted = Label(
 )
 statusGenereted.place(
     x=150,
-    y=60,
+    y=100,
 )
 
 client = Label(
@@ -282,27 +312,18 @@ client = Label(
 )
 client.place(
     x=20,
-    y=100,
+    y=140,
 )
 
-clientsOptions = ttk.Combobox(
+clientGenereted = Label(
     frame_middle,
-    values=[
-        "João",
-        "Maria",
-        "Pedro",
-        "Ana",
-        "Carlos",
-        "Lúcia",
-        "Miguel",
-        "Isabela",
-        "Rafael",
-        "Sofia",
-    ],
+    text="XXXXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
 )
-clientsOptions.place(
+clientGenereted.place(
     x=150,
-    y=100,
+    y=140,
 )
 
 valueFreight = Label(
@@ -313,7 +334,7 @@ valueFreight = Label(
 )
 valueFreight.place(
     x=20,
-    y=140,
+    y=180,
 )
 
 valueFreightGenereted = Label(
@@ -324,7 +345,7 @@ valueFreightGenereted = Label(
 )
 valueFreightGenereted.place(
     x=150,
-    y=140,
+    y=180,
 )
 
 discount = Label(
@@ -335,7 +356,7 @@ discount = Label(
 )
 discount.place(
     x=20,
-    y=180,
+    y=220,
 )
 
 discountGenereted = Label(
@@ -346,7 +367,7 @@ discountGenereted = Label(
 )
 discountGenereted.place(
     x=150,
-    y=180,
+    y=220,
 )
 
 amount = Label(
@@ -357,7 +378,7 @@ amount = Label(
 )
 amount.place(
     x=20,
-    y=220,
+    y=260,
 )
 
 amountGenereted = Label(
@@ -368,7 +389,7 @@ amountGenereted = Label(
 )
 amountGenereted.place(
     x=150,
-    y=220,
+    y=260,
 )
 # labels / widget / buttons the right
 
@@ -385,12 +406,12 @@ dateCreate.place(
 
 dataCreateGenered = Label(
     frame_middle,
-    text="XXXXX",
+    text=f'{date_formated}',
     font=("Arial 10 bold"),
     bg=whitesmoke,
 )
 dataCreateGenered.place(
-    x=650,
+    x=680,
     y=20,
 )
 
@@ -405,44 +426,36 @@ saller.place(
     y=60,
 )
 
-salesGenered = ttk.Combobox(
+salesGenered = Label(
     frame_middle,
-    values=[
-        "Lucas",
-        "João",
-        "Lucas",
-        "João",
-        "Lucas",
-        "João",
-    ],
+    text="XXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
 )
 salesGenered.place(
-    x=620,
+    x=680,
     y=60,
 )
 
-saller = Label(
+formPayment = Label(
     frame_middle,
     text="Forma de pagamento",
-    font=("Arial 8 bold"),
+    font=("Arial 10 bold"),
     bg=whitesmoke,
 )
-saller.place(
+formPayment.place(
     x=500,
     y=100,
 )
 
-formPayment = ttk.Combobox(
+formPaymentGenereted = Label(
     frame_middle,
-    values=[
-        "Cartão de debito",
-        "Cartão de credito",
-        "Boleto",
-        "Pix",
-    ],
+    text="XXXXX",
+    font=("Arial 10 bold"),
+    bg=whitesmoke,
 )
-formPayment.place(
-    x=620,
+formPaymentGenereted.place(
+    x=680,
     y=100,
 )
 
@@ -464,7 +477,7 @@ subTotalGenereted = Label(
     bg=whitesmoke,
 )
 subTotalGenereted.place(
-    x=620,
+    x=680,
     y=140,
 )
 
@@ -486,7 +499,7 @@ totalGenereted = Label(
     bg=whitesmoke,
 )
 totalGenereted.place(
-    x=620,
+    x=680,
     y=180,
 )
 
