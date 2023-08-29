@@ -25,7 +25,6 @@ blue = "#213ac4"
 # Logic
 class SalesData:
     """Class to store sales data"""
-
     def __init__(
         self,
         id,
@@ -220,37 +219,6 @@ def generate_and_save_pdf(sales_data):
         shutil.move(pdf_filename, save_path)
         messagebox.showinfo("Sucesso", f"Arquivo {save_path} salvo com sucesso!")
 
-def send_email(email_address, sales_data, pdf_filename):
-    smtp_server = config('SMTP_SERVER')
-    smtp_port = config('SMTP_PORT')
-    smtp_username = config('SMTP_USERNAME')
-    smtp_password = config('SMTP_PASSWORD')
-
-    subject = "Compra realizada com sucesso"
-    body = f"Olá, {sales_data.client}!\n\nSua compra foi realizada com sucesso."
-
-    msg = MIMEMultipart()
-    msg['From'] = smtp_username
-    msg['To'] = email_address
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    with open(pdf_filename, "rb") as attachment:
-        part = MIMEApplication(attachment.read(), Name=pdf_filename)
-        part['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
-        msg.attach(part)
-
-    text = msg.as_string()
-
-    try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_username, smtp_password)
-            server.sendmail(smtp_username, email_address, text)
-        print("Email enviado com sucesso!")
-    except Exception as e:
-        print("Erro ao enviar o email:", e)
-
 def handleNew():
     """Handle creation of new sales and calculate discounts"""
     sales_data = get_inputs_users()
@@ -260,7 +228,6 @@ def handleNew():
         return
 
     generate_invoice_pdf(sales_data)
-    send_email(sales_data.email, sales_data, pdf_filename)
 
     numberGenerated.config(text=sales_data.id)
     nameProductGenereted.config(text=sales_data.name_product)
@@ -326,12 +293,6 @@ def handleNew():
 date_now = datetime.now()
 date_formated = date_now.strftime("%Y-%m-%d")
 
-def saveFIle(sales_):
-    pass
-
-def quitFile():
-    pass
-
 window = Tk()
 window.resizable(False, False)
 window.geometry("800x400")
@@ -393,55 +354,16 @@ btn_save.place(
     y=10,
 )
 
-# buttons the right
-btn_send = Button(
-    frame_top,
-    text="Emitir".upper(),
-    font=("Arial 11 bold"),
-    width=7,
-    highlightbackground=blackLight,
-    highlightthickness=2,
-    command=handleNew
-)
-btn_send.place(
-    x=310,
-    y=10,
-)
-
 btn_quit = Button(
     frame_top,
-    text="Cancelar".upper(),
+    text="Fechar".upper(),
     font=("Arial 11 bold"),
     highlightbackground=blackLight,
     highlightthickness=2,
-    command=quitFile
+    width=20,
 )
 btn_quit.place(
-    x=390,
-    y=10,
-)
-
-btn_sendEmail = Button(
-    frame_top,
-    text="Enviar por e-mail".upper(),
-    font=("Arial 11 bold"),
-    highlightbackground=blackLight,
-    highlightthickness=2,
-)
-btn_sendEmail.place(
-    x=493,
-    y=10,
-)
-
-btn_search = Button(
-    frame_top,
-    text="Pesquisa".upper(),
-    font=("Arial 11 bold"),
-    highlightbackground=blackLight,
-    highlightthickness=2,
-)
-btn_search.place(
-    x=660,
+    x=550,
     y=10,
 )
 
