@@ -267,6 +267,14 @@ def handleNew():
         discountGenereted.config(text=f"{discount_value * 100:.0f}%")
         isDiscount_applied = True
 
+    if sales_data.total < 150 and sales_data.total > 100:
+        messagebox.showinfo(
+            "Desconto no frete", "Parabens voce ganhou 50% de desconto no frete."
+        )
+        newValueFreight = 30 - (30 * 0.50)
+        valueFreightGenereted.config(text=f"{newValueFreight:.2f}R$")
+        isDiscount_applied = True
+
         if isDiscount_applied:
             statusGenereted.config(text=f"Produto autorizado descontos")
             return
